@@ -1,0 +1,442 @@
+#!/bin/sh
+
+# _______________________________________________________
+#                  GLOBAL VARIABLES
+# _______________________________________________________
+
+renderlogfile="$HOME/Library/Logs/Maya/mayaRender.log" # default location for Maya's render log-file
+
+
+
+# timeout (value in nanoseconds) : don't drop that too low or growl might crash.
+# An overload of fast growl notifications can crash the growl daemon
+# Any notification in of the same type ($typ) coming in, faster than that,
+# since the last notification of the same typewas issued, will be ignored
+# NB: (don't go under 100000 nanoseconds (0.1 second), usually 0.3 seconds is fine)
+timeout=300000
+
+icondir="extra/icons/"
+soundAlert="extra/sounds/Horse Whinny.mp3"
+libdir="lib/"
+logfile="log/growlrender.log"
+
+
+# ...............
+# OTHER VARIABLES
+# set these variables to "enabled" to enable specific notifications (null string "" to disable)
+debug__=""
+ warn__=""
+ info__=""
+error__=""
+progr__=""
+uncaught__=""
+
+# stores the last occurence of a notification of a given category, in unix standard time
+last_progr=0
+last_debug=0
+last_warn=0
+last_info=0
+last_error=0
+last_uncaught=0
+
+# MISC
+sticky=""
+mayafile=""
+stopThis=""
+daeStatus=""
+whinny="true"
+wallmsg="true"
+OSflavor=""
+bequiet=""
+keepalive=""
+getstatus=""
+
+
+
+# _______________________________________________________
+#                  FUNCTIONS
+# _______________________________________________________
+
+#HELP MESSAGE
+ function usage()
+ {
+     #CUSTOM COLORS : declare them as local variables so as not to clutter your BASH ENVIRONMENT
+     local NONE="\033[0m"    # unsets color to term's fg color 
+     local EM="\033[1m"      #bold
+     local UN="\033[4m"      #underline
+     local EMQ="\033[21m"    #END bold  
+     local UNQ="\033[24m"    #END underline
+     local R="\033[0;31m"    # red 
+     local G="\033[0;32m"    # green 
+     local EMG="\033[1;32m"  # bold green 
+     local GR="\033[0;30m"   # grey 
+     local EMY="\033[1;33m"  # bold yellow 
+     local Y="\033[0;33m"    # yellow 
+     local B="\033[0;34m"    # blue 
+     local EMB="\033[1;34m"  # bold blue 
+     local EMM="\033[1;35m"  # bold magenta 
+     local C="\033[0;36m"    # cyan 
+     local W="\033[0;37m"    # white
+
+     echo  "
+ ${EMG}${UN}GrowlRender for Maya and Mental Ray${NONE}
+ 
+ ${EMG}description:${NONE} ${B}monitor the rendering process of a Maya scene with Mental Ray
+              via (detailed) growl notifications. This script is intended for
+              use on macOS X Leopard, but should be easilly adapted to other
+              growl-compliant OSes
+              Growl must be running on your system otherwise growlrender will
+              exit (and whinny in disagreement)${NONE}
+ 
+ ${EMG}usage:${NONE} growlrender <options> [logfile] 
+ 
+    ${G}logfile :${NONE}  ${B}path to your maya render logfile (if not provided, the default,
+              /Users/you_user_name/Library/Logs/Maya/mayaRender.log is used)${NONE}
+
+    ${G}options :${NONE}
+        ${C}START/STOP DAEMON :${NONE}
+         ${B}by default, calling growlrender will start/restart the daemon. If you
+        wish to stop it, use the --stop option${NONE}
+        
+        --stop      ${B}stops the last running growlrender daemon${NONE}
+        --status    ${B}tells if growlrender is running${NONE}
+         
+        ${C}NOTIFICATIONS :${NONE}
+        --debug   ${B}turn on 'debug' notifications     (default off)${NONE}
+        --warn    ${B}turn on 'warn' notifications      (default off)${NONE}
+        --info    ${B}turn on 'info' notifications      (default off)${NONE}
+        --error   ${B}turn on 'error' notifications     (default off)${NONE}
+        --progr   ${B}turn on 'progress' notifications  (default off)${NONE}
+        --all     ${B}turn on ALL notifications${NONE}
+        --progranderr   ${B}turn on 'progress', 'error', 'warn'${NONE}
+        
+        --sticky  ${B}growl notifications are sticky    (default is off, except
+                                                     for FATAL or SUCCESS which
+                                                     are always sticky )${NONE}
+
+        --debug   ${B}also show uncaught notifications  (default is off)${NONE}
+        
+        ${C}ALERTS:${NONE}
+        -q --quiet       ${B}growlrender doesn't print anything to STDOUT, to
+                         your wall, and doesn't play any sound${NONE}
+        
+        ${C}if the growl daemon is stopped or crashes by itslef :${NONE}                 
+         -nwh --no-whinny-on-growl-crash   ${B}won't play the sound alert ${NONE}
+         -nwa --no-wall-alert              ${B}won't send the 'wall' message${NONE}
+         --keepalive       ${B}growlrender won't exit if the main growl daemon crashes,
+                            or is disabled. No whinny, no wall alert.${NONE}
+         --keepalive-noisy ${B}same but alerts are active.${NONE}
+                                                
+        ${C}OTHERS :${NONE}
+        --growltimeout=xxx   ${B}set the number of nanoseconds between two consecutive
+                             growl notifications of one given type. Lower than 300000
+                             is hazardous${NONE}
+                        
+        -? -h --help    ${B}print this message${NONE}
+    
+    ${EMG}NB :${NONE} ${B}1) only one instance of growlrender can be launched by user
+         2) The 'growl watching' sub-daemon only works on Macos for now${NONE}
+"
+
+}
+
+
+function logThis() {
+    local msg=$1
+    local printToWall=$2 # non empty second argument to also send the message to the 'wall' command
+    if [[ ! "$bequiet" ]]; then
+        [[ "$printToWall" && "$wallmsg" ]] && echo $msg | wall
+        echo $msg  
+    fi
+    echo "$(date) - $msg" >> ./$logfile
+    
+}
+
+
+
+function checkOS() {
+    if uname -s | grep "Darwin" >/dev/null 2>&1
+    then OSflavor="Darwin"      # macos
+    fi
+
+    if uname -s | grep "Linux" >/dev/null 2>&1
+    then 
+      OSflavor="Linux"          # Linux
+      if ls -la /etc/*version  2>&1 | grep "debian" >/dev/null
+      then OSflavor="Debian"    # Linux Debian
+      fi
+    fi
+
+    if uname -s | grep -E "FreeBSD|BSD\/OS" >/dev/null 2>&1
+    then OSflavor="BSD"         # FreeBSD, BSD
+    fi
+
+    if uname -s | grep -E "CYGWIN" >/dev/null 2>&1
+    then OSflavor="CYGWIN"      # CYGWIN (win32)
+    fi
+
+    if [[ "$OSflavor" =~ unknown ]]
+    then
+      logThis "unknown OS"
+      return 1
+    fi
+    
+}
+
+
+function parseparam() {
+    # ==========================
+    # parse command line options
+    for i in $*
+    do
+    	case $i in
+    	    -nwh | --no-whinny-on-growl-crash)  whinny=""       ;;
+    	    -nwa | --no-wall-alert)             wallmsg=""      ;;
+    	    -q | --quiet)                       bequiet="yes"   ;; 
+    	    --stop)                             stopThis="yes"  ;; # stop all running instances of the daemon for the current user, including this one
+    	    --status)                           getstatus="yes" ;;
+    	    --keepalive)                        keepalive="yes"
+    	                                        whinny=""
+    	                                        wallmsg=""      ;;
+    	    --keepalive-noisy)                  keepalive="yes" ;;
+    	    --growltimeout=*)
+    	            timeout=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+    	            [ $timeout -lt 300000 ] >/dev/null 2>&1 && logThis "\nWARNING : timeout set to $timeout, under 300000 ns, this might crash growl\n" || {
+    	                echo "\nERROR : --timeout only takes an integer as argument\n"
+    	                usage
+    	                exit 1
+	                }
+    	        ;;
+    	    --debug)    debug__="enabled";;
+            --warn)      warn__="enabled";;
+            --info)      info__="enabled";;
+            --error)    error__="enabled";;
+            --progr)    progr__="enabled";;
+            --all)
+                debug__="enabled"; warn__="enabled"; info__="enabled"; error__="enabled"; progr__="enabled"
+                ;;
+            --progranderr)
+                warn__="enabled"; error__="enabled"; progr__="enabled"
+            ;;            
+            --debug)    uncaught__="enabled";;
+            --sticky)   sticky="--sticky"
+                ;;
+	    
+            -h | -? | --help)
+                usage
+                exit 0
+                ;;
+            
+          	--* | -* )
+                echo "unknown option $i\n"
+                usage
+                exit 1
+      		    ;;
+  		    
+      		[^-]*)  # user provided path to logfile
+      		    renderlogfile=$i
+      		    ;;
+        esac
+    done
+
+    # ==================================
+    # check existence of render log-file
+    if  [ ! -f $renderlogfile ]; then 
+        logThis "Couldn't find your render log-file $renderlogfile"
+        usage
+        exit 1
+    fi    
+    
+}
+
+
+function startStopRespawn() {
+    # ......................................................
+    # check that no other instance of growlrender is running
+    # for the current user. If so, we kill the last instance
+    # and spwan a new one
+    # NB:   Doing this sort of check without using locks is
+    #       tricky, even more so on MacOs which has a very
+    #       specific implementation of the 'ps' command
+    #       -> main idea : http://www.franzone.com/2007/09/23/how-can-i-tell-if-my-bash-script-is-already-running/#div-comment-4149
+    #       -> macos pbs : https://www.touchnoc.com/node/81
+    #       -> 'ps' man page on darwin : http://developer.apple.com/mac/library/documentation/Darwin/Reference/ManPages/man1/ps.1.html
+    # ......................................................
+    [ ! -z "` ps -ax -o \"pid,ppid,sess,comm,args\" | grep \`basename $0\` | grep -v \"$$\" | grep -v \"grep\" 2>&1`" ]  && {
+        [[ "$getstatus" ]] &&  { logThis "growlrender is running"; exit 0; } || {
+            
+            [[ $stopThis ]] && logThis "shutting down growlrender daemon..." || logThis "respawning growlrender daemon..." 
+            # find all other instances of growlrender running
+            ps -ax -o "pid,ppid,sess,comm,args" | grep `basename $0` | grep -v "$$" | grep -v "grep" 2>&1 | while read line ;
+            do
+                set -- $line
+                thisShell=$1                            # PID of a preceding instance of growlrender            
+                # find all instances of the tail command spawned by the $thisShell
+                ps -ax -o "pid,ppid,sess,comm,args" | grep "tail" | grep "$thisShell" | grep -v "grep" 2>&1 | while read line2 ;
+                do
+                    set -- $line2
+                    kill -9 $1                          # kill the 'tail' instance
+                done
+                kill -9 $thisShell   >/dev/null 2>&1    # ... and kill the parent growlrender script (if still running)
+            done
+            [[ $stopThis ]] && { logThis "growlrender daemon stopped"; exit 0; }
+        }
+        
+        
+    } || {
+        [[ $stopThis || $getstatus ]] && { logThis "growlrender not running"; exit 1; }
+    }
+
+    
+    
+}
+
+
+function growlwatcher() {
+    logThis "(growlwatcher daemon also started)"
+    while true; do    
+        # check that the MAIN growl daemon hasn't crashed
+        [ -z "`ps ax | grep GrowlHelperApp`" ] && { 
+                logThis "Your (main) Growl Daemon is not running... Has it crashed ?\nStopping growlrender daemon" 1
+                [[ "$whinny" && ! "$bequiet" ]] && afplay "$soundAlert"
+                [[ ! "$keepalive" ]] && {
+                    stopThis="yes"
+                    startStopRespawn
+                }
+            
+            }
+        sleep 5
+    done
+
+}
+
+function growlrenderdaemon() {
+
+    logThis "growlrender daemon started"
+    # ========================
+    # Begin TAIL loop (daemon)
+    tail -n0 -F $renderlogfile | while read; do
+    
+        # store the time in ms
+        timeMS=`./${libdir}timeNS`
+        
+      
+    
+        # ........................................................
+        #   Parsing the current line of the Maya render log 
+        # ........................................................
+     
+            # split the REPLY variable (with spaces)
+            set -- $REPLY
+            job=$1; shift; nb=$1; shift; typ=$1; shift; txt=$@
+            
+
+            dbgstr="job($job)
+            nb($nb)
+            typ($typ)
+            txt($txt)"
+
+            # ____________________________________________________
+            #                       PATTERN1
+            # ____________________________________________________
+            # usually, the render log outpu is of the form :
+            #   $job $nb $typ $txt
+            # ex :
+            #   JOB  0.0  info : slave rendering OFF
+            case $typ in
+                progr:) 
+                    if [[ "$txt" =~ "rendering finished" ]]; then txt="$typ$txt"; typ="success"; # special case
+                    else typ="progr"    # standard case
+                    fi
+                ;;
+                debug:) typ="debug";;
+                warn:) typ="warn";;
+                info:) typ="info";;
+                error:) typ="error";;
+                *)
+                    case $job in
+                        # ________________________________________
+                        #                 PATTERN2
+                        # ________________________________________
+                        # sometimes the output uses this syntax instead :
+                        #   $typ: $txt
+                        # ex:
+                        #   Debg: (Mayatomr.Scene) :     DAG path: pCube1_1Shape
+                        Prog:) typ="progr"; txt="$nb$typ$txt"   ;;
+                        Debg:)  typ="debug"; txt="$nb$typ$txt"  ;;
+                        Warning:) typ="warn"; txt="$nb$typ$txt" ;;
+                        Info:) typ="info"; txt="$nb$typ$txt"    ;;
+                        # we extract the special case "failed to render" to generate a high priority warning
+                        Error:) [[ "$txt" =~ "failed to render" ]] && typ="fail" || { typ="error"; txt="$nb$typ$txt"; }  ;;
+                        # first time we have this message, it tells us which file (scene) is being rendered
+                        # other notifications of this type are processed as Info:
+                        Result:) [[ $mayafile ]] && { mayafile="$nb$typ$txt"; typ="result"; } || { typ="info"; txt="$nb$typ$txt"; };;
+                        
+                        *)  
+                            # ____________________________________
+                            #            OTHER PATTERNS
+                            # ____________________________________
+                            # lastly, we try and catch the general messages, and the FATAL error messages
+                            # in case the render was aborted
+                            [[ "$job" =~ Scene &&  "$typ" =~ Completed ]] && { txt="$job$nb$typ$txt"; typ="success"; }
+                        ;;
+            
+                    esac
+                ;;
+            esac
+        
+
+
+        # ........................................................
+        #           send the growl notifications
+        # ........................................................
+        case $typ in
+      
+          progr)    [[ $progr__ ]]      &&  if [[ $(($timeMS - $last_progr)) -gt $timeout ]];
+                                            then  last_progr=$timeMS;   growlnotify -d 123 --image "${icondir}mayaP.png" -t "Progress" $sticky  -p 1 -m "$txt"  > /dev/null 2>&1; fi    ;;
+          debug)    [[ $debug__ ]]      &&  if [[  $(($timeMS - $last_debug)) -gt $timeout ]];
+                                            then last_debug=$timeMS;    growlnotify -d 124 --image "${icondir}mayaD.png" -t "Debug" $sticky  -p -2 -m "$txt"     > /dev/null 2>&1; fi    ;;
+          warn)     [[ $warn__ ]]       &&  if [[  $(($timeMS - $last_warn)) -gt $timeout ]];
+                                            then last_warn=$timeMS;     growlnotify -d 125 --image "${icondir}mayaW.png" -t "Warn" $sticky  -m "$txt"      > /dev/null 2>&1; fi    ;;   
+          info)     [[ $info__ ]]       &&  if [[  $(($timeMS - $last_info)) -gt $timeout ]];
+                                            then last_info=$timeMS;     growlnotify -d 126 --image "${icondir}mayaI.png" -t "Info" $sticky  -m -p -1 "$txt"      > /dev/null 2>&1; fi    ;;   
+          error)    [[ $error__ ]]      &&  if [[  $(($timeMS - $last_error)) -gt $timeout ]];
+                                            then last_error=$timeMS;    growlnotify -d 127 --image "${icondir}mayaE.png" -t "Error" $sticky  -m -p 1 "$txt"     > /dev/null 2>&1; fi    ;;   
+
+          result)   growlnotify -d 128 --image "${icondir}maya1.png" -t "Rendering Begins..." $sticky -p 1 -m "$mayafile"     > /dev/null 2>&1 ;;              
+          success)  growlnotify -d 128 --image "${icondir}mayaS.png" -t "(Maya Render) SUCCESS" --sticky  -p 2 -m "$txt for $mayafile"     > /dev/null 2>&1 ;;
+          fail)     growlnotify -d 128 --image "${icondir}mayaE.png" -t "(Maya Render) FAIL :(" --sticky  -p 2 -m "$REPLY"     > /dev/null 2>&1 ;;
+          
+          *)        [[ $uncaught__ ]]    &&  if [[  $(($timeMS - $last_uncaught)) -gt $timeout ]];
+                                            then last_uncaught=$timeMS; growlnotify -d 199 --image "${icondir}maya1.png" -t "WTF?!" $sticky  -m "$dbgstr"  > /dev/null 2>&1; fi    ;;
+        esac
+    
+    done
+    # END TAIL loop (daemon)
+    # ========================
+
+
+
+
+}
+
+
+
+
+# _______________________________________________________
+#                  MAIN
+# _______________________________________________________
+
+params="$*" # store command line params
+
+checkOS
+parseparam $params
+startStopRespawn
+# Start the growlrender daemon and detach
+growlrenderdaemon $params &
+# Start the Growl watcher daemon and detach
+[[ "$OSflavor" =~ Darwin ]] && {
+        sleep .5
+        growlwatcher &
+    }
+

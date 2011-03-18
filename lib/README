@@ -1,0 +1,8 @@
+The growlrender daemon needs to set timeouts so that notifications do not saturate the growl buffer.
+In order to do that, we need to measure accurately the system time. Shell scripts can't do that with 
+POSIX commands, so this is a tiny C utility that prints to the standard output the current unix time
+since Epoch, in nanoseconds.
+
+It's already built for Macos. If you need to rebuild it :
+
+gcc -o timeNS timeNS.c
