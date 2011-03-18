@@ -14,19 +14,23 @@
 
 1. either clone this repository or extract [this archive](https://github.com/peterhost/growlrender-maya-mentalray/tarball/master) someplace
 
-2. either
-	- copy the *growlrender-maya-mentalray* folder someplace within your $PATH
-	- make a symbolic link to 'growlrender' in a directory within your $PATH
-	  ex : `ln -s growlrender /usr/local/bin/growlrender`
+2. copy the *growlrender-maya-mentalray* folder someplace within your $PATH
 
-3. launch growlrender from the command line.
+3. **edit the growlrender script** and change the line reading
 
-4. choose Mental Ray as your rendering engine in Maya
+    `pathToGrowlRender="$HOME/bin/growlrender-maya-mentalray"`
+    to make it point to where your growlrender-maya-mentalray directory actually is
 
-5. set "Verbosity Level" in Mental Ray Rendering Options to "Detailed Messages" 
+4. launch growlrender from the command line. It will run in the background from now on, and *automatically* detect when a *Mental Ray* render is launched
+
+5. choose Mental Ray as your rendering engine in Maya
+
+6. set "Verbosity Level" in Mental Ray Rendering Options to "Detailed Messages" 
 
    `render -> batch render -> Messages -> Verbosity Level`
 
    or `render current frame -> batch render -> Messages -> Verbosity Level`
+
+##MORE :
 
 See the help for runtime options ( `growlrender -h`)

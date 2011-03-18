@@ -5,7 +5,7 @@
 # _______________________________________________________
 
 renderlogfile="$HOME/Library/Logs/Maya/mayaRender.log" # default location for Maya's render log-file
-
+pathToGrowlRender="$HOME/bin/growlrender-maya-mentalray" # CHANGE THIS ! (no trailing slash)
 
 
 # timeout (value in nanoseconds) : don't drop that too low or growl might crash.
@@ -15,10 +15,13 @@ renderlogfile="$HOME/Library/Logs/Maya/mayaRender.log" # default location for Ma
 # NB: (don't go under 100000 nanoseconds (0.1 second), usually 0.3 seconds is fine)
 timeout=300000
 
-icondir="extra/icons/"
-soundAlert="extra/sounds/Horse Whinny.mp3"
-libdir="lib/"
-logfile="log/growlrender.log"
+
+
+# -------- NO MODIFICATION FROM THIS POINT ON ------------
+icondir="$pathToGrowlRender/extra/icons/"
+soundAlert="$pathToGrowlRender/extra/sounds/Horse Whinny.mp3"
+libdir="$pathToGrowlRender/lib/"
+logfile="$pathToGrowlRender/log/growlrender.log"
 
 
 # ...............
@@ -148,7 +151,7 @@ function logThis() {
         [[ "$printToWall" && "$wallmsg" ]] && echo $msg | wall
         echo $msg  
     fi
-    echo "$(date) - $msg" >> ./$logfile
+    echo "$(date) - $msg" >> $logfile
     
 }
 
@@ -318,7 +321,7 @@ function growlrenderdaemon() {
     tail -n0 -F $renderlogfile | while read; do
     
         # store the time in ms
-        timeMS=`./${libdir}timeNS`
+        timeMS=`${libdir}timeNS`
         
       
     
