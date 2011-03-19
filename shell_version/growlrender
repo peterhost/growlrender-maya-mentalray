@@ -26,7 +26,6 @@
 # _______________________________________________________
 
 renderlogfile="$HOME/Library/Logs/Maya/mayaRender.log" # default location for Maya's render log-file
-pathToGrowlRender="/Users/plhoste/Documents/opensim/SCRIPTS/growlrender-maya-mentalray" # CHANGE THIS ! (no trailing slash)
 
 
 # timeout (value in nanoseconds) : don't drop that too low or growl might crash.
@@ -39,6 +38,7 @@ timeout=300000
 
 
 # -------- NO MODIFICATION FROM THIS POINT ON ------------
+pathToGrowlRender=$(cd "$(dirname "$0")"; pwd)
 icondir="$pathToGrowlRender/extra/icons/"
 soundAlert="$pathToGrowlRender/extra/sounds/Horse Whinny.mp3"
 libdir="$pathToGrowlRender/lib/"
