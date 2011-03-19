@@ -99,3 +99,11 @@ See the help for runtime options ( `growlrender -h`)
     2. The 'growl watching' sub-daemon only works on Macos for now
 
 
+##TODO
+
+
+* debuging, better parsing of mayarender.log (especially network rendering)
+
+*  remote host notifications
+
+*  elapsed time notifications
