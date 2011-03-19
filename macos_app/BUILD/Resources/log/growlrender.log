@@ -1,0 +1,18 @@
+Sat Mar 19 17:43:01 CET 2011 - growlrender daemon started
+Sat Mar 19 17:43:02 CET 2011 - growlwatcher child daemon started
+Sat Mar 19 17:43:06 CET 2011 - growlrender is running
+Sat Mar 19 17:43:22 CET 2011 - respawning growlrender daemon...
+Sat Mar 19 17:43:22 CET 2011 - growlrender daemon started
+Sat Mar 19 17:43:22 CET 2011 - growlwatcher child daemon started
+Sat Mar 19 17:43:53 CET 2011 - Growl Service is not running... Has it crashed ?
+Sat Mar 19 17:44:25 CET 2011 - Growl Service is not running... Has it crashed ?
+Sat Mar 19 17:44:37 CET 2011 - respawning growlrender daemon...
+Sat Mar 19 17:44:37 CET 2011 - growlrender daemon started
+Sat Mar 19 17:44:37 CET 2011 - growlwatcher child daemon started
+Sat Mar 19 17:44:53 CET 2011 - respawning growlrender daemon...
+Sat Mar 19 17:44:53 CET 2011 - growlrender daemon started
+Sat Mar 19 17:44:54 CET 2011 - growlwatcher child daemon started
+Sat Mar 19 17:44:59 CET 2011 - GrowlRender Message : Growl Service is not running... Has it crashed ?
+Sat Mar 19 17:45:06 CET 2011 - GrowlRender Message : Growl Service is not running... Has it crashed ?
+Sat Mar 19 17:45:12 CET 2011 - shutting down growlrender daemon...
+Sat Mar 19 17:45:12 CET 2011 - growlrender daemon stopped

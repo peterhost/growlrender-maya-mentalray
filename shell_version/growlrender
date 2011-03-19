@@ -340,7 +340,7 @@ function growlwatcher() {
         sleep $growlwatcherfrequency
         # check that the MAIN growl daemon hasn't crashed
         [ -z "`ps ax | grep GrowlHelperApp | grep -v grep`" ] && { 
-                logThis "Growl Service is not running... Has it crashed ?" 1
+                logThis "GrowlRender Message : Growl Service is not running... Has it crashed ?" 1
                 [[ "$whinny" ]] && afplay "$soundAlert"
                 [[ ! "$keepalive" ]] && {
                     logThis "--> Stopping growlrender daemon"
