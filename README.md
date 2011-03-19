@@ -4,7 +4,7 @@
 
 **AUTHOR** :		Pierre Lhoste
 
-**VERSION** :		1.0 (March 18 2011)
+**VERSION** :		0.1 (March 18 2011)
 
 **LICENSE** : 		BSD
 
