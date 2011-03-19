@@ -1,6 +1,6 @@
 ##GrowlRender 
 
-**DESCRIPTION** :	monitoring daemon for Maya and Mental Ray, designed for MacOS, but might work on other OSes
+**DESCRIPTION** :	monitoring daemon for Maya and Mental Ray (MacOS)
 
 **AUTHOR** :		Pierre Lhoste
 
@@ -10,7 +10,19 @@
 
 ![sample growl notifications](https://github.com/peterhost/growlrender-maya-mentalray/blob/master/extra/img/sample.png?raw=true "Better Growl notifications for Mental Ray and Maya OSx")
 
-##USAGE :
+##INSTALLATION :
+
+###MacOS app
+
+1. Download [growlrender.app](http://)
+
+2. Run it !
+
+3. See below (MORE section) to learn about growlrender command line parameters
+
+###Shell version :
+
+If you prefer to run growlrender from the command line instead, follow these instructions :
 
 1. either clone this repository or extract [this archive](https://github.com/peterhost/growlrender-maya-mentalray/tarball/master) someplace
 

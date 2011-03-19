@@ -14,6 +14,7 @@
 		<string>/Users/plhoste/Documents/opensim/SCRIPTS/growlrender-maya-mentalray/macos_app/BUILD/Resources/growlrender</string>
 		<string>/Users/plhoste/Documents/opensim/SCRIPTS/growlrender-maya-mentalray/macos_app/BUILD/Resources/lib</string>
 		<string>/Users/plhoste/Documents/opensim/SCRIPTS/growlrender-maya-mentalray/macos_app/BUILD/Resources/log</string>
+		<string>/Users/plhoste/Documents/opensim/SCRIPTS/growlrender-maya-mentalray/macos_app/BUILD/Resources/Pashua.app</string>
 	</array>
 	<key>Creator</key>
 	<string>Platypus-4.4</string>
@@ -5205,7 +5206,7 @@
 	<key>Role</key>
 	<string>Viewer</string>
 	<key>ScriptPath</key>
-	<string>/Users/plhoste/Library/Application Support/Platypus/TempScript.846</string>
+	<string>/Users/plhoste/Documents/opensim/SCRIPTS/growlrender-maya-mentalray/macos_app/BUILD/wrapper</string>
 	<key>Secure</key>
 	<false/>
 	<key>ShowInDock</key>
@@ -5213,7 +5214,7 @@
 	<key>Signature</key>
 	<string>????</string>
 	<key>StatusItemDisplayType</key>
-	<string>Icon</string>
+	<string>Icon and Text</string>
 	<key>StatusItemIcon</key>
 	<data>
 	TU0AKgAABAgAAAAAAAAAAAAAAAAAAAAAAAAAAAgICBoWFhZGGxsbaBsbG1sNDQ0tAwMD
@@ -5366,7 +5367,7 @@
 	AMZ616EAAAAAAAAAAAAAAAAAAAAA
 	</data>
 	<key>StatusItemTitle</key>
-	<string>Title</string>
+	<string></string>
 	<key>Suffixes</key>
 	<array>
 		<string>*</string>
