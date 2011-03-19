@@ -1,11 +1,31 @@
 #!/bin/sh
+# _________________________________
+# Copyright (c) 2011, Pierre Lhoste
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+# 
+# Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+# Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation
+# and/or other materials provided with the distribution.
+# Neither the name of the Oghme nor the names of its contributors may be used to endorse or promote products derived from this software without specific
+# prior written permission.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+# BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+# GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+# OF SUCH DAMAGE.
+# _________________________________
+# TODO
+
+
 
 # _______________________________________________________
 #                  GLOBAL VARIABLES
 # _______________________________________________________
 
 renderlogfile="$HOME/Library/Logs/Maya/mayaRender.log" # default location for Maya's render log-file
-pathToGrowlRender="$HOME/bin/growlrender-maya-mentalray" # CHANGE THIS ! (no trailing slash)
 
 
 # timeout (value in nanoseconds) : don't drop that too low or growl might crash.
@@ -18,6 +38,7 @@ timeout=300000
 
 
 # -------- NO MODIFICATION FROM THIS POINT ON ------------
+pathToGrowlRender=$(cd "$(dirname "$0")"; pwd)
 icondir="$pathToGrowlRender/extra/icons/"
 soundAlert="$pathToGrowlRender/extra/sounds/Horse Whinny.mp3"
 libdir="$pathToGrowlRender/lib/"
@@ -47,13 +68,13 @@ sticky=""
 mayafile=""
 stopThis=""
 daeStatus=""
-whinny="true"
-wallmsg="true"
+whinny=""
+wallmsg=""
 OSflavor=""
 bequiet=""
-keepalive=""
+keepalive="true"
 getstatus=""
-
+growlwatcherfrequency=30 # frenquency in seconds of 'growl service' checks
 
 
 # _______________________________________________________
@@ -103,33 +124,34 @@ getstatus=""
         
         --stop      ${B}stops the last running growlrender daemon${NONE}
         --status    ${B}tells if growlrender is running${NONE}
+        -q --quiet  ${B}growlrender doesn't print status messages to STDOUT.${NONE}
          
-        ${C}NOTIFICATIONS :${NONE}
+        ${C}GROWL NOTIFICATIONS :${NONE}
         --debug   ${B}turn on 'debug' notifications     (default off)${NONE}
         --warn    ${B}turn on 'warn' notifications      (default off)${NONE}
         --info    ${B}turn on 'info' notifications      (default off)${NONE}
         --error   ${B}turn on 'error' notifications     (default off)${NONE}
         --progr   ${B}turn on 'progress' notifications  (default off)${NONE}
+        
         --all     ${B}turn on ALL notifications${NONE}
         --progranderr   ${B}turn on 'progress', 'error', 'warn'${NONE}
+        --debug   ${B}also show uncaught notifications  (default is off)${NONE}
         
         --sticky  ${B}growl notifications are sticky    (default is off, except
                                                      for FATAL or SUCCESS which
                                                      are always sticky )${NONE}
-
-        --debug   ${B}also show uncaught notifications  (default is off)${NONE}
         
         ${C}ALERTS:${NONE}
-        -q --quiet       ${B}growlrender doesn't print anything to STDOUT, to
-                         your wall, and doesn't play any sound${NONE}
         
-        ${C}if the growl daemon is stopped or crashes by itslef :${NONE}                 
-         -nwh --no-whinny-on-growl-crash   ${B}won't play the sound alert ${NONE}
-         -nwa --no-wall-alert              ${B}won't send the 'wall' message${NONE}
-         --keepalive       ${B}growlrender won't exit if the main growl daemon crashes,
-                            or is disabled. No whinny, no wall alert.${NONE}
-         --keepalive-noisy ${B}same but alerts are active.${NONE}
-                                                
+        ${C}if the growl daemon is stopped or crashes by itslef :${NONE}
+         -gf --growl-check-freq            ${B}frenquency in seconds of checks for
+                                           the main GROWL service${NONE}                 
+         -nk --no-keepalive                ${B}tells growlrender to exit whenever
+                                           the main growl daemon crashes,or is disabled.${NONE}
+         -w --wall-notify-on-growl-crash       ${B}sends alert to 'wall'${NONE}
+         -s --sound-notify-on-growl-crash      ${B}plays a sound alert ${NONE}
+         -sw --all-notify-on-growl-crash       ${B}both of the preceding${NONE}
+                                                       
         ${C}OTHERS :${NONE}
         --growltimeout=xxx   ${B}set the number of nanoseconds between two consecutive
                              growl notifications of one given type. Lower than 300000
@@ -144,12 +166,17 @@ getstatus=""
 }
 
 
+
+
 function logThis() {
     local msg=$1
     local printToWall=$2 # non empty second argument to also send the message to the 'wall' command
-    if [[ ! "$bequiet" ]]; then
-        [[ "$printToWall" && "$wallmsg" ]] && echo $msg | wall
-        echo $msg  
+    if [ $printToWall ]; then
+         [[ "$wallmsg" ]] && 
+            { echo $msg | wall; } ||
+                { [[ ! "$bequiet" ]] && echo $msg; }
+    else
+        [[ ! "$bequiet" ]] && echo $msg
     fi
     echo "$(date) - $msg" >> $logfile
     
@@ -193,15 +220,25 @@ function parseparam() {
     for i in $*
     do
     	case $i in
-    	    -nwh | --no-whinny-on-growl-crash)  whinny=""       ;;
-    	    -nwa | --no-wall-alert)             wallmsg=""      ;;
-    	    -q | --quiet)                       bequiet="yes"   ;; 
-    	    --stop)                             stopThis="yes"  ;; # stop all running instances of the daemon for the current user, including this one
-    	    --status)                           getstatus="yes" ;;
-    	    --keepalive)                        keepalive="yes"
-    	                                        whinny=""
-    	                                        wallmsg=""      ;;
-    	    --keepalive-noisy)                  keepalive="yes" ;;
+    	    -q | --quiet)                           bequiet="yes"   ;; 
+    	    --stop)                                 stopThis="yes"  ;; # stop all running instances of the daemon for the current user, including this one
+    	    --status)                               getstatus="yes" ;;
+    	    -gf=* | --growl-check-freq=*)
+	                  growlwatcherfrequency=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
+      	            [ $growlwatcherfrequency -lt 300000 ] >/dev/null 2>&1 || {
+      	                echo "\nERROR : --gc / --growl-check-freq only takes an integer as argument\n"
+      	                usage
+      	                exit 1
+  	                }
+          	            
+
+                ;;
+            -nk | --no-keepalive)                   keepalive=""    ;;
+            
+            -w  | --wall-notify-on-growl-crash)     wallmsg="true"  ;;      
+            -s  | --sound-notify-on-growl-crash)    whinny="true"   ;;
+            -sw | --all-notify-on-growl-crash)      wallmsg="true"; whinny="true"   ;;
+
     	    --growltimeout=*)
     	            timeout=`echo $i | sed 's/[-a-zA-Z0-9]*=//'`
     	            [ $timeout -lt 300000 ] >/dev/null 2>&1 && logThis "\nWARNING : timeout set to $timeout, under 300000 ns, this might crash growl\n" || {
@@ -295,24 +332,28 @@ function startStopRespawn() {
 }
 
 
+# this child daemon watches for the main Growl service's status
+# (on/off)
 function growlwatcher() {
-    logThis "(growlwatcher daemon also started)"
+    logThis "growlwatcher child daemon started"
     while true; do    
+        sleep $growlwatcherfrequency
         # check that the MAIN growl daemon hasn't crashed
-        [ -z "`ps ax | grep GrowlHelperApp`" ] && { 
-                logThis "Your (main) Growl Daemon is not running... Has it crashed ?\nStopping growlrender daemon" 1
-                [[ "$whinny" && ! "$bequiet" ]] && afplay "$soundAlert"
+        [ -z "`ps ax | grep GrowlHelperApp | grep -v grep`" ] && { 
+                logThis "Growl Service is not running... Has it crashed ?" 1
+                [[ "$whinny" ]] && afplay "$soundAlert"
                 [[ ! "$keepalive" ]] && {
+                    logThis "--> Stopping growlrender daemon"
                     stopThis="yes"
                     startStopRespawn
                 }
             
             }
-        sleep 5
     done
 
 }
 
+# this is the main daemon
 function growlrenderdaemon() {
 
     logThis "growlrender daemon started"
@@ -320,8 +361,11 @@ function growlrenderdaemon() {
     # Begin TAIL loop (daemon)
     tail -n0 -F $renderlogfile | while read; do
     
-        # store the time in ms
-        timeMS=`${libdir}timeNS`
+        # RECORD (precise) time so as not to flood the main Growl daemon 
+        # store the time in nanoseconds : this uses a tiniest utility written in C
+        # if ever it doesn't work for you, you might want to gcc recompile it
+        # see README in lib folder
+        timeNS=`${libdir}timeNS`
         
       
     
@@ -395,23 +439,23 @@ function growlrenderdaemon() {
         # ........................................................
         case $typ in
       
-          progr)    [[ $progr__ ]]      &&  if [[ $(($timeMS - $last_progr)) -gt $timeout ]];
-                                            then  last_progr=$timeMS;   growlnotify -d 123 --image "${icondir}mayaP.png" -t "Progress" $sticky  -p 1 -m "$txt"  > /dev/null 2>&1; fi    ;;
-          debug)    [[ $debug__ ]]      &&  if [[  $(($timeMS - $last_debug)) -gt $timeout ]];
-                                            then last_debug=$timeMS;    growlnotify -d 124 --image "${icondir}mayaD.png" -t "Debug" $sticky  -p -2 -m "$txt"     > /dev/null 2>&1; fi    ;;
-          warn)     [[ $warn__ ]]       &&  if [[  $(($timeMS - $last_warn)) -gt $timeout ]];
-                                            then last_warn=$timeMS;     growlnotify -d 125 --image "${icondir}mayaW.png" -t "Warn" $sticky  -m "$txt"      > /dev/null 2>&1; fi    ;;   
-          info)     [[ $info__ ]]       &&  if [[  $(($timeMS - $last_info)) -gt $timeout ]];
-                                            then last_info=$timeMS;     growlnotify -d 126 --image "${icondir}mayaI.png" -t "Info" $sticky  -m -p -1 "$txt"      > /dev/null 2>&1; fi    ;;   
-          error)    [[ $error__ ]]      &&  if [[  $(($timeMS - $last_error)) -gt $timeout ]];
-                                            then last_error=$timeMS;    growlnotify -d 127 --image "${icondir}mayaE.png" -t "Error" $sticky  -m -p 1 "$txt"     > /dev/null 2>&1; fi    ;;   
+          progr)    [[ $progr__ ]]      &&  if [[ $(($timeNS - $last_progr)) -gt $timeout ]];
+                                            then  last_progr=$timeNS;   growlnotify -d 123 --image "${icondir}mayaP.png" -t "Progress" $sticky  -p 1 -m "$txt"  > /dev/null 2>&1; fi    ;;
+          debug)    [[ $debug__ ]]      &&  if [[  $(($timeNS - $last_debug)) -gt $timeout ]];
+                                            then last_debug=$timeNS;    growlnotify -d 124 --image "${icondir}mayaD.png" -t "Debug" $sticky  -p -2 -m "$txt"     > /dev/null 2>&1; fi    ;;
+          warn)     [[ $warn__ ]]       &&  if [[  $(($timeNS - $last_warn)) -gt $timeout ]];
+                                            then last_warn=$timeNS;     growlnotify -d 125 --image "${icondir}mayaW.png" -t "Warn" $sticky  -m "$txt"      > /dev/null 2>&1; fi    ;;   
+          info)     [[ $info__ ]]       &&  if [[  $(($timeNS - $last_info)) -gt $timeout ]];
+                                            then last_info=$timeNS;     growlnotify -d 126 --image "${icondir}mayaI.png" -t "Info" $sticky  -m -p -1 "$txt"      > /dev/null 2>&1; fi    ;;   
+          error)    [[ $error__ ]]      &&  if [[  $(($timeNS - $last_error)) -gt $timeout ]];
+                                            then last_error=$timeNS;    growlnotify -d 127 --image "${icondir}mayaE.png" -t "Error" $sticky  -m -p 1 "$txt"     > /dev/null 2>&1; fi    ;;   
 
           result)   growlnotify -d 128 --image "${icondir}maya1.png" -t "Rendering Begins..." $sticky -p 1 -m "$mayafile"     > /dev/null 2>&1 ;;              
           success)  growlnotify -d 128 --image "${icondir}mayaS.png" -t "(Maya Render) SUCCESS" --sticky  -p 2 -m "$txt for $mayafile"     > /dev/null 2>&1 ;;
           fail)     growlnotify -d 128 --image "${icondir}mayaE.png" -t "(Maya Render) FAIL :(" --sticky  -p 2 -m "$REPLY"     > /dev/null 2>&1 ;;
           
-          *)        [[ $uncaught__ ]]    &&  if [[  $(($timeMS - $last_uncaught)) -gt $timeout ]];
-                                            then last_uncaught=$timeMS; growlnotify -d 199 --image "${icondir}maya1.png" -t "WTF?!" $sticky  -m "$dbgstr"  > /dev/null 2>&1; fi    ;;
+          *)        [[ $uncaught__ ]]    &&  if [[  $(($timeNS - $last_uncaught)) -gt $timeout ]];
+                                            then last_uncaught=$timeNS; growlnotify -d 199 --image "${icondir}maya1.png" -t "WTF?!" $sticky  -m "$dbgstr"  > /dev/null 2>&1; fi    ;;
         esac
     
     done

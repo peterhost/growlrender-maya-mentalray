@@ -4,7 +4,7 @@
 
 **AUTHOR** :		Pierre Lhoste
 
-**VERSION** :		1.0 (March 18 2011)
+**VERSION** :		0.2 (March 19 2011)
 
 **LICENSE** : 		BSD
 
@@ -16,16 +16,11 @@
 
 2. copy the *growlrender-maya-mentalray* folder someplace within your $PATH
 
-3. **edit the growlrender script** and change the line reading
+3. launch growlrender from the command line `growlrender --all`. It will run in the background from now on, and *automatically* detect when a *Mental Ray* render is launched
 
-    `pathToGrowlRender="$HOME/bin/growlrender-maya-mentalray"`
-    to make it point to where your growlrender-maya-mentalray directory actually is
+4. choose Mental Ray as your rendering engine in Maya
 
-4. launch growlrender from the command line `growlrender --all`. It will run in the background from now on, and *automatically* detect when a *Mental Ray* render is launched
-
-5. choose Mental Ray as your rendering engine in Maya
-
-6. set "Verbosity Level" in Mental Ray Rendering Options to "Detailed Messages" 
+5. set "Verbosity Level" in Mental Ray Rendering Options to "Detailed Messages" 
 
    `render -> batch render -> Messages -> Verbosity Level`
 
@@ -53,45 +48,47 @@ See the help for runtime options ( `growlrender -h`)
 
    *options* :
 
-    START/STOP DAEMON :
-        by default, calling growlrender will start/restart the daemon. If you
-       wish to stop it, use the --stop option
-       
-       --stop      stops the last running growlrender daemon
-       --status    tells if growlrender is running
-        
-       NOTIFICATIONS :
-       --debug   turn on 'debug' notifications     (default off)
-       --warn    turn on 'warn' notifications      (default off)
-       --info    turn on 'info' notifications      (default off)
-       --error   turn on 'error' notifications     (default off)
-       --progr   turn on 'progress' notifications  (default off)
-       --all     turn on ALL notifications
-       --progranderr   turn on 'progress', 'error', 'warn'
-       
-       --sticky  growl notifications are sticky    (default is off, except
-                                                    for FATAL or SUCCESS which
-                                                    are always sticky )
+		   START/STOP DAEMON :
+		    by default, calling growlrender will start/restart the daemon. If you
+		   wish to stop it, use the --stop option
+   
+		   --stop      stops the last running growlrender daemon
+		   --status    tells if growlrender is running
+		   -q --quiet  growlrender doesn't print status messages to STDOUT.
+    
+		   GROWL NOTIFICATIONS :
+		   --debug   turn on 'debug' notifications     (default off)
+		   --warn    turn on 'warn' notifications      (default off)
+		   --info    turn on 'info' notifications      (default off)
+		   --error   turn on 'error' notifications     (default off)
+		   --progr   turn on 'progress' notifications  (default off)
+   
+		   --all     turn on ALL notifications
+		   --progranderr   turn on 'progress', 'error', 'warn'
+		   --debug   also show uncaught notifications  (default is off)
+   
+		   --sticky  growl notifications are sticky    (default is off, except
+		                                                for FATAL or SUCCESS which
+		                                                are always sticky )
+   
+		   ALERTS:
+   
+		   if the growl daemon is stopped or crashes by itslef :
+		    -gf --growl-check-freq            frenquency in seconds of checks for
+		                                      the main GROWL service                 
+		    -nk --no-keepalive                tells growlrender to exit whenever
+		                                      the main growl daemon crashes,or is disabled.
+		    -w --wall-notify-on-growl-crash       sends alert to 'wall'
+		    -s --sound-notify-on-growl-crash      plays a sound alert 
+		    -sw --all-notify-on-growl-crash       both of the preceding
+                                                  
+		   OTHERS :
+		   --growltimeout=xxx   set the number of nanoseconds between two consecutive
+		                        growl notifications of one given type. Lower than 300000
+		                        is hazardous
+                   
+		   -? -h --help    print this message
 
-       --debug   also show uncaught notifications  (default is off)
-       
-       ALERTS:
-       -q --quiet       growlrender doesn't print anything to STDOUT, to
-                        your wall, and doesn't play any sound
-       
-       if the growl daemon is stopped or crashes by itslef :                 
-        -nwh --no-whinny-on-growl-crash   won't play the sound alert 
-        -nwa --no-wall-alert              won't send the 'wall' message
-        --keepalive       		growlrender won't exit if the main growl daemon crashes,
-                           		or is disabled. No whinny, no wall alert.
-        --keepalive-noisy 		same but ALL alerts are active.
-                                               
-       OTHERS :
-       --growltimeout=xxx   set the number of nanoseconds between two consecutive
-                            growl notifications of one given type. Lower than 300000
-                            is hazardous
-                       
-       -? -h --help    print this message
    
    *NB* :
 
