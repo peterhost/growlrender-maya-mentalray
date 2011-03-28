@@ -1,0 +1,324 @@
+#!/bin/sh
+
+# _____________________________________________________________________
+# Wrapper function for interfacing to Pashua. Written by Carsten
+# Bluem <carsten@bluem.net> in 10/2003, modified in 12/2003 (including
+# a code snippet contributed by Tor Sigurdsson), 08/2004 and 12/2004.
+# As 1st argument, you must pass a configuration string
+# As 2nd argument, you may pass the encoding to use (see documentation)
+# As 3rd argument, you may pass the path to the Pashua application,
+#                  if it's not in one of the standard locations.
+# _____________________________________________________________________
+pashua_run() {
+
+	# Write config file
+	pashua_configfile=`/usr/bin/mktemp /tmp/pashua_XXXXXXXXX`
+	echo "$1" > $pashua_configfile
+
+	# Find Pashua binary. We do search both . and dirname "$0"
+	# , as in a doubleclickable application, cwd is /
+	# BTW, all these quotes below are necessary to handle paths
+	# containing spaces.
+	bundlepath="Pashua.app/Contents/MacOS/Pashua"
+	if [ "$3" = "" ]
+	then
+		mypath=`dirname "$0"`
+		for searchpath in "$mypath/Pashua" "$mypath/$bundlepath" "./$bundlepath" \
+						  "/Applications/$bundlepath" "$HOME/Applications/$bundlepath"
+		do
+			if [ -f "$searchpath" -a -x "$searchpath" ]
+			then
+				pashuapath=$searchpath
+				break
+			fi
+		done
+	else
+		# Directory given as argument
+		pashuapath="$3/$bundlepath"
+	fi
+
+	if [ ! "$pashuapath" ]
+	then
+		echo "Error: Pashua could not be found"
+		exit 1
+	fi
+
+	# Manage encoding
+	if [ "$2" = "" ]
+	then
+		encoding=""
+	else
+		encoding="-e $2"
+	fi
+
+	# Get result
+	result=`"$pashuapath" $encoding $pashua_configfile | sed 's/ /;;;/g'`
+
+	# Remove config file
+	rm $pashua_configfile
+
+	# Parse result
+	for line in $result
+	do
+		key=`echo $line | sed 's/^\([^=]*\)=.*$/\1/'`
+		value=`echo $line | sed 's/^[^=]*=\(.*\)$/\1/' | sed 's/;;;/ /g'`		
+		varname=$key
+		varvalue="$value"
+		eval $varname='$varvalue'
+	done
+
+} # pashua_run()
+# _____________________________________________________________________
+
+
+# Define what the dialog should be like
+# Take a look at Pashua's Readme file for more info on the syntax
+
+conf="
+# Set transparency: 0 is transparent, 1 is opaque
+*.transparency=0.95
+
+# Set window title
+*.title = GrowlRender Daemon
+
+# Set the background image
+#bg.type = image
+#bg.x = 30
+#bg.y = 2
+#bg.path =  extra/icons/bg.jpg
+
+# Set the Icon image
+img.type = image
+#img.label = No Label 
+img.path = extra/icons/appicon.png 
+img.maxwidth = 110
+#img.border = 1
+
+# Introductory text
+tb.type = text
+tb.default = monitor the rendering process of a Maya scene with Mental Ray via (detailed) growl notifications.[return]Growl must be running on your system otherwise growlrender will complain. Please, use the settings below to customize GrowlRender to your needs
+tb.height = 276
+tb.width = 310
+tb.x = 110
+tb.y = 390
+
+
+# # Main text
+# txt.type = text
+# txt.text = quick launch : select one of these options
+# txt.height = 276
+# txt.width = 310
+# txt.x = 0
+# txt.y = 385
+
+# Add a checkbox
+chk1.type = checkbox
+chk1.label = show PROGRESS notifications
+chk1.default = 1
+chk1.tooltip = Check this box if you wish to see Progress notifications (recommended)
+
+# Add a checkbox
+chk2.type = checkbox
+chk2.label = show INFO notifications
+chk2.default = 0
+chk2.tooltip = Check this box if you wish to see general info notifications from Mental Ray
+
+# Add a checkbox
+chk3.type = checkbox
+chk3.label = show ERROR notifications
+chk3.default = 0
+chk3.tooltip = Check this box if you wish to see Error notifications (recommended)
+
+# Add a checkbox
+chk4.type = checkbox
+chk4.label = show WARNING notifications
+chk4.default = 0
+chk4.tooltip = Check this box if you wish to see WArnings
+
+# Add a checkbox
+chk5.type = checkbox
+chk5.label = show DEBUG notifications
+chk5.default = 0
+chk5.tooltip = Check this box if you wish to see Debug notifications (advanced users)
+
+
+
+
+# Add a popup menu
+pop.type = popup
+pop.label = Alerts
+pop.tooltip = In case Growl crashes or is disabled, growlrender sends you an alert
+pop.width = 310
+pop.option = no alerts
+pop.option = sound alert
+pop.option = visual bell
+pop.default = no alerts
+
+
+
+# Add a text field
+tx.type = textfield
+tx.label = Advanced - enter command line arguments here
+tx.default = Textfield content
+tx.width = 310
+
+# Add a cancel button with default label
+cb.type=cancelbutton
+
+
+";
+
+
+
+
+
+conf2="
+# Set transparency: 0 is transparent, 1 is opaque
+*.transparency=0.95
+
+# Set window title
+*.title = GrowlRender Message
+
+
+
+# Add a cancel button with default label
+cb.type=cancelbutton
+
+";
+
+# _____________________________________________________________________
+#                         MAIN
+# _____________________________________________________________________
+
+
+
+
+# ICON reflecting the status of the growlrender daemon
+status = "$(growlrender --status; echo $?)"
+if [ $status ]
+then
+    # growlrender ON icon
+    conf="$conf
+    
+        # growlrender status icon
+        grstatus.type = image
+        grstatus.label = GrowRender ON
+        grstatus.x = 300
+        grstatus.y = 255
+        grstatus.path = extra/icons/grON.png
+        grstatus.maxwidth = 64
+        grstatus.border = 1
+        grstatus.tooltip = GrowlRender Daemon IS running
+        
+        # Stop Growlrender button
+        stopb.type = button
+        stopb.label = Stop GrowlRender
+
+        # Restart Growlrender button
+        startb.type = button
+        startb.label = Restart GrowlRender
+        
+        "
+        
+else
+    # growlrender OFF icon
+    conf="$conf
+        grstatus.type = image
+        grstatus.label = GrowRender OFF
+        grstatus.x = 300
+        grstatus.y = 275
+        grstatus.path = extra/icons/grOFF.png
+        grstatus.maxwidth = 64
+        grstatus.border = 1
+        grstatus.tooltip = GrowlRender Daemon is NOT running
+        
+        
+        # Stop Growlrender button
+        stopb.type = button
+        stopb.label = Stop GrowlRender
+        stopb.disabled = 1
+
+        # Start Growlrender button
+        startb.type = button
+        startb.label = Start GrowlRender
+        
+        "
+fi
+
+# ICON reflecting the status of the  GROWL SERVICE
+if [ -z "`ps ax | grep GrowlHelperApp | grep -v grep`" ] 
+then
+    # growlrender OFF icon
+    conf="$conf
+        gstatus.type = image
+        gstatus.label = Growl OFF
+        gstatus.x = 300
+        gstatus.y = 180
+        gstatus.path = extra/icons/gOFF.png
+        gstatus.maxwidth = 64
+        gstatus.border = 1
+        gstatus.tooltip = Growl service is NOT running"
+        
+else
+    # growlrender ON icon
+    conf="$conf
+        gstatus.type = image
+        gstatus.label = Growl ON
+        gstatus.x = 300
+        gstatus.y = 180
+        gstatus.path = extra/icons/gON.png
+        gstatus.maxwidth = 64
+        gstatus.border = 1
+        gstatus.tooltip = Growl service IS running"
+fi
+
+
+pashua_run "$conf" 
+
+#growlnotify -d 899  --sticky -t "PLATYPUS app" $sticky -p 1 -m "DEBUG message"
+
+
+
+# echo "Pashua created the following variables:"
+# echo "  tb  = $tb"
+# echo "  tx  = $tx"
+# echo "  ob  = $ob"
+# echo "  pop = $pop"
+# echo "  rb  = $rb"
+# echo "  cb  = $cb"
+# echo ""
+
+
+dbg="[return]startb = $startb[return]tb  = $tb[return]tx  = $tx[return]ob  = $ob[return]pop = $pop[return]rb  = $rb[return]cb  = $cb[return]EOF"
+msg=""
+
+if [  $startb == 1 ]
+then
+    growlnotify -d 899  --sticky -t "PLATYPUS app" $sticky -p 1 -m "start button clicked"
+    #toto=`tmp tata`
+    toto=`growlrender --all  &; sleep 1; growlrender --status -h` 
+    #toto=`ls | grep growl |sed ':start /^.*$/N;s/\n//g; t start'`
+    growlnotify -d 900  --sticky -t "PLATYPUS app" $sticky -p 1 -m "$? - $toto"
+    msg="$msg[return]START: $toto"
+    sleep .5
+#    titi=`./growlrender --stop  &` 
+#    msg="$msg[return]STOP: $titi"
+#    growlnotify -d 901  --sticky -t "PLATYPUS app" $sticky -p 1 -m "$titi"
+    #msg="$msg[return] growlrender --status $(./growlrender --status | sed ':start /^.*$/N;s/\n//g; t start')"
+else
+    ./growlrender --stop &
+    msg="$msg[return] GrowlRender stopped !! $startb"
+fi
+
+conf2=" $conf2
+    # Message
+    tb.type = text
+    tb.default = $msg
+    tb.height = 276
+    tb.width = 310
+    tb.x = 110
+    tb.y = 390
+    "
+
+
+pashua_run "$conf2"

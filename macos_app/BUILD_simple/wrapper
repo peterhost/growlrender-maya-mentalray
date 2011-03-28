@@ -1,0 +1,24 @@
+#!/bin/sh
+
+./growlrender --status >/dev/null 2>&1
+exitvalue=$?
+
+if [ $exitvalue == 1 ]
+then
+   
+    ./growlrender --all  
+    
+else
+
+    ./growlrender --stop
+    
+fi
+
+
+
+
+
+
+# while true; do    
+#     sleep 1
+# done
