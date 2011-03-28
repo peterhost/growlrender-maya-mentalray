@@ -18,7 +18,15 @@
 
 1. Download [growlrender.app](https://github.com/downloads/peterhost/growlrender-maya-mentalray/mentalgrowler.tar.bz2)
 
-2. Doublle click on the app. A tiny icon will appear in your menu bar : click it once to start the growlrender daemon, click it again to stop it
+2. Doublle click on the app. A tiny icon will appear in your menu bar : click it once to start the growlrender daemon, click it again to stop it.
+
+3.  The daemon runs in the background, so there's nothing else for you to do. Choose Mental Ray as your rendering engine in Maya
+
+4. set "Verbosity Level" in Mental Ray Rendering Options to "Detailed Messages" 
+
+   `render -> batch render -> Messages -> Verbosity Level`
+
+   or `render current frame -> batch render -> Messages -> Verbosity Level`
 
 
 ###Shell version :
