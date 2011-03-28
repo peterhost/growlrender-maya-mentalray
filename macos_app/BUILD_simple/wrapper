@@ -6,11 +6,14 @@ exitvalue=$?
 if [ $exitvalue == 1 ]
 then
    
-    ./growlrender --all  
+    ./growlrender --all 
+    [ $? ] && growlnotify -d 120 --image "extra/icons/appicon.png" -t "MentalGrowler" -p -2   -m  "Growlrender DAEMON started"     > /dev/null 2>&1 ||
+                growlnotify -d 120 --image "extra/icons/appicon.png" -t "MentalGrowler" -p -2  -m  "CAN'T start Growlrender DAEMON :("     > /dev/null 2>&1;
     
 else
 
     ./growlrender --stop
+    [ $? ] && growlnotify -d 120 --image "extra/icons/appicon.png" -t "MentalGrowler" -p -2   -m  "Growlrender DAEMON stopped"     > /dev/null 2>&1 
     
 fi
 

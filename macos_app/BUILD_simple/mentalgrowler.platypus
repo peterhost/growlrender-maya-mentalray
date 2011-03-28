@@ -10,10 +10,10 @@
 	<string>Peter Host</string>
 	<key>BundledFiles</key>
 	<array>
-		<string>/Users/plhoste/Documents/opensim/SCRIPTS/growl-maya-mentalray/macos_app/BUILD2/Resources/extra</string>
-		<string>/Users/plhoste/Documents/opensim/SCRIPTS/growl-maya-mentalray/macos_app/BUILD2/Resources/growlrender</string>
-		<string>/Users/plhoste/Documents/opensim/SCRIPTS/growl-maya-mentalray/macos_app/BUILD2/Resources/lib</string>
-		<string>/Users/plhoste/Documents/opensim/SCRIPTS/growl-maya-mentalray/macos_app/BUILD2/Resources/log</string>
+		<string>/Users/plhoste/Documents/opensim/SCRIPTS/growl-maya-mentalray/macos_app/BUILD_simple/Resources/extra</string>
+		<string>/Users/plhoste/Documents/opensim/SCRIPTS/growl-maya-mentalray/macos_app/BUILD_simple/Resources/growlrender</string>
+		<string>/Users/plhoste/Documents/opensim/SCRIPTS/growl-maya-mentalray/macos_app/BUILD_simple/Resources/lib</string>
+		<string>/Users/plhoste/Documents/opensim/SCRIPTS/growl-maya-mentalray/macos_app/BUILD_simple/Resources/log</string>
 	</array>
 	<key>Creator</key>
 	<string>Platypus-4.4</string>
@@ -5205,7 +5205,7 @@
 	<key>Role</key>
 	<string>Viewer</string>
 	<key>ScriptPath</key>
-	<string>/Users/plhoste/Documents/opensim/SCRIPTS/growl-maya-mentalray/macos_app/BUILD2/wrapper</string>
+	<string>/Users/plhoste/Documents/opensim/SCRIPTS/growl-maya-mentalray/macos_app/BUILD_simple/wrapper</string>
 	<key>Secure</key>
 	<false/>
 	<key>ShowInDock</key>

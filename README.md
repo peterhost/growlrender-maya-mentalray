@@ -1,4 +1,4 @@
-##GrowlRender 
+##MentalGrowler 
 
 **DESCRIPTION** :	monitoring daemon for Maya and Mental Ray (MacOS)
 
@@ -16,17 +16,26 @@
 
 ###MacOS app
 
-1. Download [growlrender.app](https://github.com/downloads/peterhost/growlrender-maya-mentalray/mentalgrowler.tar.bz2)
+1. Download [mentalgrowler.tar.bz2](https://github.com/downloads/peterhost/growlrender-maya-mentalray/mentalgrowler.tar.bz2), extract the archive, move (drag and drop) *mentalgrowler.app* to your /Applications folder
 
-2. Doublle click on the app. A tiny icon will appear in your menu bar : click it once to start the growlrender daemon, click it again to stop it.
+2. Doublle click on the app. A tiny icon will appear in your menu bar ![](https://github.com/peterhost/growlrender-maya-mentalray/blob/master/macos_app/BUILD_simple/Resources/extra/icons/menuicon.png?raw=true "" =24x24)
 
-3.  The daemon runs in the background, so there's nothing else for you to do. Choose Mental Ray as your rendering engine in Maya
+		USAGE : 
+		0.  this icon is where you launch the daemon. By default, it's not running
+		1.  click it once to start the growlrender daemon
+		2.  click it again to stop it.
+		3.  ... and so forth
+	Each time, a menu pops out under the ![](https://github.com/peterhost/growlrender-maya-mentalray/blob/master/macos_app/BUILD_simple/Resources/extra/icons/menuicon.png?raw=true "" =16x16) icon, telling you which operation just occured (mentions in red).
+	
+	If you wish to exit the daemon (which only takes up 6MB) choose "quit mentalgrowler" in the popup menu, when the status (red) text tells you the daemon **is stopped**
 
-4. set "Verbosity Level" in Mental Ray Rendering Options to "Detailed Messages" 
+3.  The daemon runs in the background, so there's nothing else for you to do. It will *automatically* detect when a *Mental Ray* batch render is launched
+
+4.	Choose Mental Ray as your rendering engine in Maya
+
+5. set "Verbosity Level" in Mental Ray Rendering Options to "Detailed Messages" 
 
    `render -> batch render -> Messages -> Verbosity Level`
-
-   or `render current frame -> batch render -> Messages -> Verbosity Level`
 
 
 ###Shell version :
@@ -37,7 +46,7 @@ If you prefer to run growlrender from the command line instead, follow these ins
 
 2. copy the *shell_version_* directory to someplace within your $PATH
 
-3. launch growlrender from the command line `growlrender --all`. It will run in the background from now on, and *automatically* detect when a *Mental Ray* render is launched
+3. launch growlrender from the command line `growlrender --all`. It will run in the background from now on, and *automatically* detect when a *Mental Ray* batch render is launched
 
 4. choose Mental Ray as your rendering engine in Maya
 
@@ -45,7 +54,8 @@ If you prefer to run growlrender from the command line instead, follow these ins
 
    `render -> batch render -> Messages -> Verbosity Level`
 
-   or `render current frame -> batch render -> Messages -> Verbosity Level`
+NB : the growlrender script is a simple bash script. so it should be able to run on any *growl-able* platform
+
 
 ##MORE :
 

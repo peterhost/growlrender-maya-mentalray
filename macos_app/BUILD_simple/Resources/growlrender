@@ -476,8 +476,6 @@ function growlrenderdaemon() {
 
 params="$*" # store command line params
 
-growlnotify -d 128 --image "${icondir}maya1.png" -t "DEBUUG (remove me!!!)" $sticky -p 1 -m "GROWLRENDER started"
-
 checkOS
 parseparam $params
 startStopRespawn
