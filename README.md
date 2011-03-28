@@ -10,7 +10,7 @@
 
 **LICENSE** : 		BSD
 
-![sample growl notifications](https://github.com/peterhost/growlrender-maya-mentalray/blob/master/extra/img/sample.png?raw=true "Better Growl notifications for Mental Ray and Maya OSx")
+![sample growl notifications](https://github.com/peterhost/growlrender-maya-mentalray/blob/master/shell_version/extra/img/sample.png?raw=true "Better Growl notifications for Mental Ray and Maya OSx")
 
 ##INSTALLATION :
 
