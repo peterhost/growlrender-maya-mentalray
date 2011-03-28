@@ -1,0 +1,4 @@
+CFBundleName = "mentalgrowler";
+CFBundleShortVersionString = "1.0";
+CFBundleGetInfoString = "mentalgrowler version 1.0 Copyright 2011 Peter Host";
+NSHumanReadableCopyright = "Copyright 2011 Peter Host.";

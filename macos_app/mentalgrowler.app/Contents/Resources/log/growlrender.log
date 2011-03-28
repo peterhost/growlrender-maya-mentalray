@@ -5241,3 +5241,15 @@ Sun Mar 27 15:57:53 CEST 2011 - growlrender is running
 Sun Mar 27 16:03:33 CEST 2011 - growlrender is running
 Sun Mar 27 16:04:07 CEST 2011 - growlrender is running
 Sun Mar 27 16:04:18 CEST 2011 - growlrender is running
+Mon Mar 28 02:21:30 CEST 2011 - growlrender not running
+Mon Mar 28 02:21:30 CEST 2011 - growlrender daemon started
+Mon Mar 28 02:21:31 CEST 2011 - growlwatcher child daemon started
+Mon Mar 28 02:21:44 CEST 2011 - growlrender is running
+Mon Mar 28 02:21:44 CEST 2011 - shutting down growlrender daemon...
+Mon Mar 28 02:21:45 CEST 2011 - growlrender daemon stopped
+Mon Mar 28 02:21:52 CEST 2011 - growlrender not running
+Mon Mar 28 02:21:52 CEST 2011 - growlrender daemon started
+Mon Mar 28 02:21:53 CEST 2011 - growlwatcher child daemon started
+Mon Mar 28 02:21:56 CEST 2011 - growlrender is running
+Mon Mar 28 02:21:56 CEST 2011 - shutting down growlrender daemon...
+Mon Mar 28 02:21:56 CEST 2011 - growlrender daemon stopped
