@@ -10,25 +10,32 @@
 
 **LICENSE** : 		BSD
 
-![sample growl notifications](https://github.com/peterhost/growlrender-maya-mentalray/blob/master/extra/img/sample.png?raw=true "Better Growl notifications for Mental Ray and Maya OSx")
+![sample growl notifications](https://github.com/peterhost/growlrender-maya-mentalray/blob/master/shell_version/extra/img/sample.png?raw=true "Better Growl notifications for Mental Ray and Maya OSx")
 
 ##INSTALLATION :
 
 ###MacOS app
 
-1. Download [growlrender.app](http://)
+1. Download [growlrender.app](https://github.com/downloads/peterhost/growlrender-maya-mentalray/mentalgrowler.tar.bz2)
 
-2. Run it !
+2. Doublle click on the app. A tiny icon will appear in your menu bar : click it once to start the growlrender daemon, click it again to stop it.
 
-3. See below (MORE section) to learn about growlrender command line parameters
+3.  The daemon runs in the background, so there's nothing else for you to do. Choose Mental Ray as your rendering engine in Maya
+
+4. set "Verbosity Level" in Mental Ray Rendering Options to "Detailed Messages" 
+
+   `render -> batch render -> Messages -> Verbosity Level`
+
+   or `render current frame -> batch render -> Messages -> Verbosity Level`
+
 
 ###Shell version :
 
 If you prefer to run growlrender from the command line instead, follow these instructions :
 
-1. either clone this repository or extract [this archive](https://github.com/peterhost/growlrender-maya-mentalray/tarball/master) someplace
+1. either clone this repository or extract [this archive](https://github.com/peterhost/growlrender-maya-mentalray/zipball/v0.3) someplace
 
-2. copy the *growlrender-maya-mentalray* folder someplace within your $PATH
+2. copy the *shell_version_* directory to someplace within your $PATH
 
 3. launch growlrender from the command line `growlrender --all`. It will run in the background from now on, and *automatically* detect when a *Mental Ray* render is launched
 
