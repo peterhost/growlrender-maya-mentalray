@@ -16,11 +16,10 @@
 
 ###MacOS app
 
-1. Download [growlrender.app](http://)
+1. Download [growlrender.app](https://github.com/downloads/peterhost/growlrender-maya-mentalray/mentalgrowler.tar.bz2)
 
-2. Run it !
+2. Doublle click on the app. A tiny icon will appear in your menu bar : click it once to start the growlrender daemon, click it again to stop it
 
-3. See below (MORE section) to learn about growlrender command line parameters
 
 ###Shell version :
 
