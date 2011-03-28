@@ -5,7 +5,7 @@
 **AUTHOR** :		Pierre Lhoste
 
 
-**VERSION** :		0.3 (March 28 2011)
+**VERSION** :		0.4 (March 28 2011)
 
 
 **LICENSE** : 		BSD
