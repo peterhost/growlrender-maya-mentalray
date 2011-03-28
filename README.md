@@ -33,9 +33,9 @@
 
 If you prefer to run growlrender from the command line instead, follow these instructions :
 
-1. either clone this repository or extract [this archive](https://github.com/peterhost/growlrender-maya-mentalray/tarball/master) someplace
+1. either clone this repository or extract [this archive](https://github.com/peterhost/growlrender-maya-mentalray/zipball/v0.3) someplace
 
-2. copy the *growlrender-maya-mentalray* folder someplace within your $PATH
+2. copy the *shell_version_* directory to someplace within your $PATH
 
 3. launch growlrender from the command line `growlrender --all`. It will run in the background from now on, and *automatically* detect when a *Mental Ray* render is launched
 
